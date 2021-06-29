@@ -51,12 +51,21 @@ jobs:
           username: ${{ secrets.DNAME }}
           password: ${{ secrets.DPASS }}
 
-      - name: Build & Push Docker Image
-        env:
-          DOCKER_REPO: uditgaurav
-          DOCKER_IMAGE: go-runner
-          DOCKER_TAG: ci
-        run: make push
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: build/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: uditgaurav/go-runner:ci          
+
+      # - name: Build & Push Docker Image
+      #   env:
+      #     DOCKER_REPO: uditgaurav
+      #     DOCKER_IMAGE: go-runner
+      #     DOCKER_TAG: ci
+      #   run: make push
 
   trivy:
     needs: pre-checks
