@@ -57,7 +57,7 @@ jobs:
 
       - name: Build & Push Docker Image
         env:
-          DOCKER_REPO: ${REPONAME}
+          DOCKER_REPO: uditgaurav
           DOCKER_IMAGE: ${IMAGE_NAME}
           DOCKER_TAG: ${IMAGE_TAG}
         run: make push
