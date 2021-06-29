@@ -62,7 +62,7 @@ jobs:
         uses: docker/login-action@v1 
         with:
           username: ${DNAME}
-          password: ${DPASS}    
+          password: ${DPASS}
 
       - name: Build & Push Docker Image For release tag
         env:
