@@ -67,7 +67,7 @@ jobs:
           push: true
           file: build/Dockerfile
           platforms: linux/amd64,linux/arm64
-          tags: uditgaurav/go-runner:${RELEASE_TAG},uditgaurav/go-runner:latest
+          tags: uditgaurav/go-runner:${{ env.RELEASE_TAG }},uditgaurav/go-runner:latest
 
   trivy:
     needs: pre-checks
