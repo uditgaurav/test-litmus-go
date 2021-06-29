@@ -86,11 +86,6 @@ image-push:
 
 .PHONY: build-amd64
 build-amd64:
-
-	@echo "------------------------------"
-	@echo "--> Build experiment go binary" 
-	@echo "------------------------------"
-	@env GOOS=linux GOARCH=amd64 sh build/generate_go_binary
 	@echo "-------------------------"
 	@echo "--> Build go-runner image" 
 	@echo "-------------------------"
