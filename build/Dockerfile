@@ -22,7 +22,7 @@ ARG USER=litmus
 
 ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
 ENV GLIBC_VERSION=2.30-r0
-
+ARG TARGETARCH
 
 RUN rm -rf /var/lib/apt/lists/*
 
