@@ -55,14 +55,7 @@ unused-package-check:
 	fi
 
 .PHONY: build
-build: experiment-build docker.buildx image-build
-
-.PHONY: experiment-build
-experiment-build:
-	@echo "------------------------------"
-	@echo "--> Build experiment go binary" 
-	@echo "------------------------------"
-	@./build/go-multiarch-build.sh build/generate_go_binary
+build: docker.buildx image-build
 
 .PHONY: docker.buildx
 docker.buildx:
@@ -80,7 +73,16 @@ image-build:
 	@echo "-------------------------"
 	@echo "--> Build go-runner image" 
 	@echo "-------------------------"
-	@docker buildx build --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG) .
+	@docker buildx build . --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
+
+.PHONY: push
+push: docker.buildx image-push
+
+image-push:
+	@echo "------------------------"
+	@echo "--> Push go-runner image" 
+	@echo "------------------------"
+	@docker buildx build . --push --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: build-amd64
 build-amd64:
@@ -101,16 +103,7 @@ push-amd64:
 	@echo "--> Pushing image" 
 	@echo "------------------------------"
 	@sudo docker push $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
-	
-.PHONY: push
-push: docker.buildx litmus-go-push
-
-litmus-go-push:
-	@echo "-------------------"
-	@echo "--> go-runner image" 
-	@echo "-------------------"
-	REGISTRYNAME="$(DOCKER_REGISTRY)" REPONAME="$(DOCKER_REPO)" IMGNAME="$(DOCKER_IMAGE)" IMGTAG="$(DOCKER_TAG)" ./build/push
-	
+		
 .PHONY: trivy-check
 trivy-check:
 

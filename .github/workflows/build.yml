@@ -5,53 +5,43 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened]
 
+env:
+  REPONAME: "uditgaurav"
+  IMAGE_NAME: "go-runner" 
+  IMAGE_TAG: "ci"
+
 jobs:
-  lint:
+  pre-checks:
     runs-on: ubuntu-latest
     steps:
       # Install golang
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.13.1'
+          go-version: 1.14
 
-      # Setup gopath
-      - name: Setting up GOPATH 
-        run: |
-          echo "GOPATH=${GITHUB_WORKSPACE}/go" >> $GITHUB_ENV
-        
-      # Checkout to the latest commit
-      # On specific directory/path
       - uses: actions/checkout@v2
         with:
-          path: go/src/github.com/${{github.repository}}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       #TODO: Add Dockerfile linting
       # Running go-lint
       - name: Checking Go-Lint
         run : |
           sudo apt-get update && sudo apt-get install golint
-          cd go/src/github.com/${{github.repository}}
           make gotasks
 
   build:
+    needs: pre-checks
     runs-on: ubuntu-latest
     steps:
-
       # Install golang
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.13.1'
+          go-version: 1.14
 
-      # Setup gopath
-      - name: Setting up GOPATH 
-        run: |
-          echo "GOPATH=${GITHUB_WORKSPACE}/go" >> $GITHUB_ENV
-          
-      # Checkout to the latest commit
-      # On specific directory/path
       - uses: actions/checkout@v2
         with:
-          path: go/src/github.com/${{github.repository}}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -66,18 +56,27 @@ jobs:
 
       - name: Build Docker Image
         env:
-          DOCKER_REPO: litmuschaos
-          DOCKER_IMAGE: go-runner
-          DOCKER_TAG: ci
+          DOCKER_REPO: ${REPONAME}
+          DOCKER_IMAGE: ${IMAGE_NAME}
+          DOCKER_TAG: ${IMAGE_TAG}
         run: |
-          cd go/src/github.com/${{github.repository}}
           make build
 
-  trivy: 
+  trivy:
+    needs: pre-checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      # Install golang
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Build image for trivy scan
+        run: make build-amd64
 
       - name: setup trivy
         run: |

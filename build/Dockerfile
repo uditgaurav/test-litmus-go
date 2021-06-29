@@ -2,11 +2,18 @@ FROM alpine:3.13
 
 LABEL maintainer="LitmusChaos"
 
-ARG TARGETARCH
 ARG USER=litmus
 
 ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc
 ENV GLIBC_VERSION=2.30-r0
+
+RUN export GOOS=$(echo ${TARGETPLATFORM} | cut -d / -f1) && \
+    export GOARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2)
+
+RUN go env
+
+RUN CGO_ENABLED=0 go build -o build/_output/experiments ./bin/experiment
+RUN CGO_ENABLED=0 go build -o build/_output/helpers ./bin/helper
 
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -63,7 +70,7 @@ RUN curl -L https://github.com/litmuschaos/test-tools/releases/download/1.13.6/d
 COPY --from=docker:19.03 /usr/local/bin/docker /usr/local/bin/
 
 #Copying Necessary Files
-COPY ./build/_output/${TARGETARCH} ./litmus
+COPY ./build/_output ./litmus
 COPY ./pkg/cloud/aws/common/ssm-docs/LitmusChaos-AWS-SSM-Docs.yml ./litmus/LitmusChaos-AWS-SSM-Docs.yml
 
 #add new user

@@ -4,54 +4,37 @@ on:
   create:
     tags:
       - '**'
+env:
+  REPONAME: "uditgaurav"
+  IMAGE_NAME: "go-runner" 
+  DNAME: ${{ secrets.DNAME }}
+  DPASS: ${{ secrets.DPASS }}
 
 jobs:
-  lint:
+  pre-checks:
     runs-on: ubuntu-latest
     steps:
       # Install golang
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.13.1'
-
-      # Setup gopath
-      - name: Setting up GOPATH 
-        run: |
-          echo "GOPATH=${GITHUB_WORKSPACE}/go" >> $GITHUB_ENV
-          
-      # Checkout to the latest commit
-      # On specific directory/path
+          go-version: 1.14
       - uses: actions/checkout@v2
-        with:
-          path: go/src/github.com/${{github.repository}}
 
       #TODO: Add Dockerfile linting
       # Running go-lint
       - name: Checking Go-Lint
         run : |
           sudo apt-get update && sudo apt-get install golint
-          cd go/src/github.com/${{github.repository}}
           make gotasks
-
   push:
+    needs: pre-checks
     runs-on: ubuntu-latest
     steps:
-
       # Install golang
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.13.1'
-
-      # Setup gopath
-      - name: Setting up GOPATH 
-        run: |
-          echo "GOPATH=${GITHUB_WORKSPACE}/go" >> $GITHUB_ENV
-          
-      # Checkout to the latest commit
-      # On specific directory/path
+          go-version: 1.14
       - uses: actions/checkout@v2
-        with:
-          path: go/src/github.com/${{github.repository}}
 
       - name: Set Tag
         run: |
@@ -75,33 +58,39 @@ jobs:
         with:
           version: latest
 
-      - name: Build Docker Image
+      - name: Login to Litmus Docker Registry
+        run: echo ${{ secrets.DPASS }} | docker login -u ${{ secrets.DNAME }} --password-stdin
+
+      - name: Build & Push Docker Image For release tag
         env:
-          DOCKER_REPO: litmuschaos
-          DOCKER_IMAGE: go-runner
+          DOCKER_REPO: ${REPONAME}
+          DOCKER_IMAGE: ${IMAGE_NAME}
           DOCKER_TAG: ${RELEASE_TAG}
           DNAME: ${{ secrets.DNAME }}
           DPASS: ${{ secrets.DPASS }}
-        run: |
-          cd go/src/github.com/${{github.repository}}
-          make experiment-build
+        run: make push      
 
-      - name: Push Docker Image
+      - name: Build & Push Docker Image For latest tag
         env:
-          DOCKER_REPO: litmuschaos
-          DOCKER_IMAGE: go-runner
-          DOCKER_TAG: ${RELEASE_TAG}
+          DOCKER_REPO: ${REPONAME}
+          DOCKER_IMAGE: ${IMAGE_NAME}
+          DOCKER_TAG: "latest"
           DNAME: ${{ secrets.DNAME }}
           DPASS: ${{ secrets.DPASS }}
-        run: |
-          cd go/src/github.com/${{github.repository}}
-          make push
+        run: make push
 
-  trivy: 
+  trivy:
+    needs: pre-checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      # Install golang
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - uses: actions/checkout@v2
+
+      - name: Build image for trivy scan
+        run: make build-amd64
 
       - name: setup trivy
         run: |
