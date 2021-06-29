@@ -18,7 +18,6 @@ help:
 	@echo ""
 	@echo "Usage:-"
 	@echo "\tmake deps          -- sets up dependencies for image build"
-	@echo "\tmake build         -- builds the litmus-go binary & docker multi-arch image"
 	@echo "\tmake push          -- pushes the litmus-go multi-arch image"
 	@echo "\tmake build-amd64   -- builds the litmus-go binary & docker amd64 image"
 	@echo "\tmake push-amd64    -- pushes the litmus-go amd64 image"
@@ -54,9 +53,6 @@ unused-package-check:
 		echo "go mod tidy checking failed!"; echo "$${tidy}"; echo; \
 	fi
 
-.PHONY: build
-build: docker.buildx image-build
-
 .PHONY: docker.buildx
 docker.buildx:
 	@echo "------------------------------"
@@ -68,13 +64,6 @@ docker.buildx:
 		docker buildx use multibuilder;\
 	fi
 
-.PHONY: image-build
-image-build:	
-	@echo "-------------------------"
-	@echo "--> Build go-runner image" 
-	@echo "-------------------------"
-	@docker buildx build . --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
-
 .PHONY: push
 push: docker.buildx image-push
 
@@ -84,16 +73,6 @@ image-push:
 	@echo "------------------------"
 	@echo "Pushing $(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)"
 	@docker buildx build . --push --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
-
-.PHONY: release-push
-push: docker.buildx release-image-push
-
-release-image-push:
-	@echo "------------------------"
-	@echo "--> Push go-runner image" 
-	@echo "------------------------"
-	@docker buildx build . --push -f build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache -t $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG) \
-	-t $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):latest
 
 
 .PHONY: build-amd64

@@ -64,14 +64,15 @@ jobs:
           username: ${DNAME}
           password: ${DPASS}
 
-      - name: Build & Push Docker Image For release and latest tag
-        env:
-          DOCKER_REPO: uditgaurav
-          DOCKER_IMAGE: go-runner
-          DOCKER_TAG: ${RELEASE_TAG}
-          DNAME: ${{ secrets.DNAME }}
-          DPASS: ${{ secrets.DPASS }}
-        run: make release-push
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        env: 
+          RELEASE_TAG: ${RELEASE_TAG}
+        with:
+          push: true
+          file: build/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: uditgaurav/go-runner:${RELEASE_TAG},uditgaurav/go-runner:latest
 
   trivy:
     needs: pre-checks
