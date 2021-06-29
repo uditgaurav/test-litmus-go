@@ -84,6 +84,17 @@ image-push:
 	@echo "------------------------"
 	@docker buildx build . --push --file build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache --tag $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
 
+.PHONY: release-push
+push: docker.buildx release-image-push
+
+release-image-push:
+	@echo "------------------------"
+	@echo "--> Push go-runner image" 
+	@echo "------------------------"
+	@docker buildx build . --push -f build/Dockerfile --progress plane --platform linux/arm64,linux/amd64 --no-cache -t $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG) \
+	-t $(DOCKER_REGISTRY)/$(DOCKER_REPO)/$(DOCKER_IMAGE):latest
+
+
 .PHONY: build-amd64
 build-amd64:
 	@echo "-------------------------"

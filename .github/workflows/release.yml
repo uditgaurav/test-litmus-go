@@ -64,21 +64,14 @@ jobs:
           username: ${DNAME}
           password: ${DPASS}
 
-      - name: Build & Push Docker Image For release tag
+      - name: Build & Push Docker Image For release and latest tag
         env:
-          DOCKER_REPO: ${REPONAME}
-          DOCKER_IMAGE: ${IMAGE_NAME}
+          DOCKER_REPO: uditgaurav
+          DOCKER_IMAGE: go-runner
           DOCKER_TAG: ${RELEASE_TAG}
           DNAME: ${{ secrets.DNAME }}
           DPASS: ${{ secrets.DPASS }}
-        run: make push      
-
-      - name: Build & Push Docker Image For latest tag
-        env:
-          DOCKER_REPO: ${REPONAME}
-          DOCKER_IMAGE: ${IMAGE_NAME}
-          DOCKER_TAG: "latest"
-        run: make push
+        run: make release-push
 
   trivy:
     needs: pre-checks
