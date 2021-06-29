@@ -1,17 +1,18 @@
 FROM golang:1.14 AS builder
 
-ARG TARGETPLATFORM
+ARG TARGETOS=linux
+ARG TARGETARCH
 
 ADD . /litmus-go
 WORKDIR /litmus-go
 
-RUN export GOOS=$(echo ${TARGETPLATFORM} | cut -d / -f1) && \
-    export GOARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2)
+RUN export GOOS=${TARGETOS} && \
+    export GOARCH=${TARGETARCH}
 
 RUN go env
 
-RUN CGO_ENABLED=0 go build -o build/_output/experiments ./bin/experiment
-RUN CGO_ENABLED=0 go build -o build/_output/helpers ./bin/helper
+RUN CGO_ENABLED=0 go build -o /output/experiments ./bin/experiment
+RUN CGO_ENABLED=0 go build -o /output/helpers ./bin/helper
 
 
 FROM alpine:3.13
@@ -77,7 +78,7 @@ RUN curl -L https://github.com/litmuschaos/test-tools/releases/download/1.13.6/p
 RUN curl -L https://github.com/litmuschaos/test-tools/releases/download/1.13.6/dns_interceptor --output /usr/local/bin/dns_interceptor && chmod +x /usr/local/bin/dns_interceptor
 
 COPY --from=docker:19.03 /usr/local/bin/docker /usr/local/bin/
-COPY --from=builder /build/_output /litmus
+COPY --from=builder /output/ /litmus
 
 #Copying Necessary Files
 COPY ./pkg/cloud/aws/common/ssm-docs/LitmusChaos-AWS-SSM-Docs.yml ./litmus/LitmusChaos-AWS-SSM-Docs.yml
