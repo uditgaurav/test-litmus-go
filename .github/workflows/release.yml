@@ -5,8 +5,8 @@ on:
     tags:
       - '**'
 env:
-  REPONAME: "uditgaurav"
-  IMAGE_NAME: "go-runner" 
+  REPONAME: uditgaurav
+  IMAGE_NAME: go-runner
   DNAME: ${{ secrets.DNAME }}
   DPASS: ${{ secrets.DPASS }}
 

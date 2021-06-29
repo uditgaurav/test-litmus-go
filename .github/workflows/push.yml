@@ -7,9 +7,9 @@ on:
     tags-ignore:
       - '**'
 env:
-  REPONAME: "uditgaurav"
-  IMAGE_NAME: "go-runner" 
-  IMAGE_TAG: "ci"
+  REPONAME: uditgaurav
+  IMAGE_NAME: go-runner
+  IMAGE_TAG: ci
   DNAME: ${{ secrets.DNAME }}
   DPASS: ${{ secrets.DPASS }}
 
